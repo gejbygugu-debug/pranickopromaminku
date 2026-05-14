@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pro Elenku 🌸</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background:#000;
+  overflow:hidden;
+  height:100dvh;
+  width:100vw;
+  font-family:'Georgia','Times New Roman',serif;
+}
+
+/* ── PHASE 1: tři řádky ── */
+#phase1 {
+  position:fixed; inset:0;
+  display:flex; flex-direction:column;
+  z-index:10;
+  transition:opacity 0.9s ease;
+}
+#phase1.fade-out { opacity:0; pointer-events:none; }
+
+.row {
+  flex:1; display:flex;
+  align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  background:#000;
+}
+.row-fill {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,#ff6bae,#ff1a75);
+  transform:translateX(-100%);
+  transition:transform 1s cubic-bezier(0.22,0.61,0.36,1);
+}
+.row-text {
+  position:relative; z-index:2;
+  font-size:clamp(2.8rem,16vw,5.5rem);
+  font-weight:900; color:#fff; opacity:0;
+  letter-spacing:0.18em;
+  text-shadow:0 3px 18px rgba(0,0,0,0.25);
+  transition:opacity 0.5s ease 0.55s;
+}
+.row.active .row-fill  { transform:translateX(0); }
+.row.active .row-text  { opacity:1; }
+
+/* ── SRDÍČKA V TVARU SRDCE ── */
+#heart-overlay {
+  position:fixed; inset:0;
+  z-index:16; pointer-events:none;
+  overflow:hidden;
+  transition:opacity 0.8s ease;
+}
+
+/* ── PHASE A: My s tebou / My bez tebe ── */
+#phaseA {
+  position:fixed; inset:0;
+  background:linear-gradient(135deg,#ff6bae,#ff1a75);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; z-index:17;
+  transition:opacity 0.8s ease;
+  overflow:hidden;
+}
+#phaseA.visible  { opacity:1; }
+#phaseA.fade-out { opacity:0; pointer-events:none; }
+
+#stebou, #beztebe {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  display:flex; flex-direction:column;
+  align-items:center; gap:2.6rem;
+  opacity:0;
+  transition:opacity 0.65s ease;
+  width:92%; text-align:center;
+}
+#stebou.visible  { opacity:1; }
+#beztebe.visible { opacity:1; }
+
+#stebou h2, #beztebe-text {
+  font-family:'Palatino Linotype','Palatino','Book Antiqua',Georgia,serif;
+  font-size:clamp(2.8rem,13vw,5.5rem);
+  font-weight:900; color:#fff;
+  letter-spacing:0.05em;
+  text-shadow:0 3px 10px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.5);
+  line-height:1.1;
+}
+
+#beztebe-text {
+  display:block;
+  transform-origin:bottom center;
+}
+
+/* Pád textu "My bez tebe" */
+#beztebe-text.falling {
+  animation:textFall 2.5s cubic-bezier(0.4,0,0.6,1) forwards;
+}
+@keyframes textFall {
+  0%   { transform:translateY(0)   rotate(0deg); }
+  10%  { transform:translateY(3vh)  rotate(-11deg); }
+  25%  { transform:translateY(13vh) rotate(18deg); }
+  42%  { transform:translateY(28vh) rotate(-15deg); }
+  56%  { transform:translateY(46vh) rotate(10deg); }
+  64%  { transform:translateY(36vh) rotate(-5deg); }
+  72%  { transform:translateY(43vh) rotate(2.5deg); }
+  79%  { transform:translateY(38vh) rotate(-1.2deg); }
+  88%  { transform:translateY(42vh) rotate(0.6deg); }
+  95%  { transform:translateY(40vh) rotate(0.2deg); }
+  100% { transform:translateY(41vh) rotate(0deg); }
+}
+
+#emoji-happy, #emoji-sad {
+  font-size:clamp(4rem,17vw,7.5rem);
+  display:block;
+  line-height:1;
+}
+
+/* Smajlík — levá strana připnutá, pravá padá gravitací */
+#emoji-sad {
+  transform-origin: left center;
+}
+#emoji-sad.swinging {
+  animation:emojiSwing 3.4s ease-in-out forwards;
+}
+@keyframes emojiSwing {
+  0%   { transform:rotate(0deg); }
+  14%  { transform:rotate(65deg); }    /* pravá strana rychle padá */
+  26%  { transform:rotate(43deg); }    /* komitá zpět */
+  38%  { transform:rotate(57deg); }    /* dopředu */
+  49%  { transform:rotate(47deg); }    /* zpět */
+  59%  { transform:rotate(53deg); }    /* dopředu */
+  68%  { transform:rotate(49deg); }    /* zpět */
+  76%  { transform:rotate(51.5deg); }  /* dopředu */
+  83%  { transform:rotate(50deg); }    /* zpět */
+  90%  { transform:rotate(50.8deg); }  /* malé komitání */
+  96%  { transform:rotate(50.3deg); }
+  100% { transform:rotate(50.5deg); } /* klid — visí na levé straně */
+}
+
+/* ── PHASE B: JEŠTĚ NĚCO ALE! ── */
+#phaseB {
+  position:fixed; inset:0;
+  background:linear-gradient(135deg,#ff6bae,#ff1a75);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; z-index:18;
+  transition:opacity 0.75s ease;
+}
+#phaseB.visible  { opacity:1; }
+#phaseB.fade-out { opacity:0; pointer-events:none; }
+
+.jeste-text {
+  font-family:'Palatino Linotype','Palatino','Book Antiqua',Georgia,serif;
+  font-size:clamp(2.2rem,12vw,4.8rem);
+  font-weight:900; color:#fff;
+  text-align:center; padding:0 1.5rem;
+  letter-spacing:0.07em;
+  text-shadow:0 3px 10px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.5);
+  line-height:1.2;
+}
+
+/* ── PHASE 2: načítání ── */
+#phase2 {
+  position:fixed; inset:0;
+  background:#8a8a8a;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  opacity:0; z-index:20; gap:2.8rem;
+  transition:opacity 0.9s ease;
+}
+#phase2.visible  { opacity:1; }
+#phase2.fade-out { opacity:0; pointer-events:none; }
+
+.spinner {
+  width:68px; height:68px;
+  border:5px solid rgba(255,255,255,0.25);
+  border-top-color:#fff; border-radius:50%;
+  animation:spin 0.85s linear infinite;
+  flex-shrink:0;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+#loading-text {
+  color:#fff;
+  font-size:clamp(1.05rem,4.8vw,1.35rem);
+  text-align:center; opacity:0;
+  transition:opacity 1s ease;
+  padding:0 2.5rem; line-height:1.65;
+  font-style:italic;
+}
+#loading-text.visible { opacity:1; }
+
+/* ── VÝBUCH SRDÍČEK ── */
+#hearts-layer {
+  position:fixed; inset:0;
+  z-index:60; pointer-events:none;
+  overflow:hidden;
+  opacity:1; transition:opacity 2.2s ease;
+}
+#hearts-layer.fade-out { opacity:0; }
+
+.hp {
+  position:absolute;
+  font-size:var(--fs); opacity:0;
+  animation:hpop var(--dur) cubic-bezier(0.34,1.56,0.64,1) forwards var(--del);
+}
+@keyframes hpop {
+  0%   { opacity:0; transform:scale(0) rotate(var(--r)); }
+  50%  { opacity:1; transform:scale(1.6) rotate(calc(var(--r) + 22deg)); }
+  100% { opacity:1; transform:scale(1)   rotate(var(--r)); }
+}
+
+/* ── PHASE 4: finální zpráva ── */
+#phase4 {
+  position:fixed; inset:0;
+  background:#fff0f5;
+  display:flex; flex-direction:column; align-items:center;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  opacity:0; z-index:40;
+  transition:opacity 1.4s ease;
+}
+#phase4.visible { opacity:1; }
+
+.msg-top {
+  width:100%; text-align:center;
+  padding:3.5rem 1.5rem 1.5rem; color:#c9527a;
+}
+.msg-top h1 {
+  font-size:clamp(2rem,9vw,3.2rem);
+  font-weight:900; letter-spacing:0.04em; line-height:1.2;
+}
+.divider {
+  width:55px; height:3px;
+  background:linear-gradient(90deg,transparent,#ff6bae,transparent);
+  margin:1.2rem auto 0; border-radius:99px;
+}
+.msg-body {
+  max-width:480px; width:100%;
+  padding:1.5rem 1.8rem 4rem;
+  color:#4a2a38;
+  font-size:clamp(1rem,4.3vw,1.15rem);
+  line-height:1.95; text-align:center;
+}
+.msg-body p { margin-bottom:1.6rem; }
+.msg-body strong { color:#c9527a; font-weight:700; }
+.sign {
+  font-style:italic;
+  font-size:clamp(1.1rem,4.8vw,1.3rem);
+  color:#b8426c; font-weight:bold;
+  line-height:1.7; margin-top:0.8rem;
+}
+.corner {
+  position:fixed;
+  font-size:clamp(1.4rem,5vw,2rem);
+  opacity:0.18; pointer-events:none;
+  z-index:39; user-select:none;
+}
+</style>
+</head>
+<body>
+
+<!-- PHASE 1 -->
+<div id="phase1">
+  <div class="row" id="row1"><div class="row-fill"></div><span class="row-text">PRO</span></div>
+  <div class="row" id="row2"><div class="row-fill"></div><span class="row-text">MAMINKU</span></div>
+  <div class="row" id="row3"><div class="row-fill"></div><span class="row-text">ELENKU</span></div>
+</div>
+
+<!-- SRDÍČKA V TVARU SRDCE -->
+<div id="heart-overlay"></div>
+
+<!-- PHASE A: My s tebou / My bez tebe -->
+<div id="phaseA">
+  <div id="stebou">
+    <h2>My s tebou</h2>
+    <span id="emoji-happy">😊</span>
+  </div>
+  <div id="beztebe">
+    <span id="beztebe-text">My bez tebe</span>
+    <span id="emoji-sad">😟</span>
+  </div>
+</div>
+
+<!-- PHASE B: JEŠTĚ NĚCO ALE! -->
+<div id="phaseB">
+  <div class="jeste-text">JEŠTĚ NĚCO ALE!</div>
+</div>
+
+<!-- PHASE 2 -->
+<div id="phase2">
+  <div class="spinner"></div>
+  <p id="loading-text">Načítám tvoji obrovskou empatii Eli, velký soubor&nbsp;😘</p>
+</div>
+
+<!-- VÝBUCH SRDÍČEK -->
+<div id="hearts-layer"></div>
+
+<!-- PHASE 4 -->
+<div id="phase4">
+  <div class="msg-top">
+    <h1>Pro Elenku&nbsp;🌸</h1>
+    <div class="divider"></div>
+  </div>
+  <div class="msg-body">
+    <p>Maminko, moc si tě vážíme.<br>Každý den, ve všem, co pro nás děláš.</p>
+    <p>Stále se o nás staráš, myslíš na každý detail a neseš nás na svých ramenou s takovou lehkostí, jako by to ani nebylo nic zvláštního.</p>
+    <p>Ale je to něco zvláštního. Je to hodně.</p>
+    <p>Proto ti celá rodina z celého srdce děkuje — a prosíme tě: <strong>nezapomínej odpočívat.</strong><br>Zasloužíš si to víc než kdokoli jiný. 🌷</p>
+    <p class="sign">Milujeme tě<br>celá rodina&nbsp;♡</p>
+  </div>
+</div>
+
+<script>
+const HEARTS_EMOJI = ['❤️','💗','💕','💖','💓','💝','🩷','💞','❣️'];
+
+/* ══ SRDCOVÝ TVAR ══ */
+function buildHeartShape() {
+  const overlay = document.getElementById('heart-overlay');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const scale = Math.min(vw * 0.86 / 32, vh * 0.78 / 26);
+  const cx = vw / 2;
+  const cy = vh / 2 - scale * 1.2;
+  const N = 62;
+
+  for (let i = 0; i < N; i++) {
+    const t  = (i / N) * 2 * Math.PI;
+    const hx =   16 * Math.pow(Math.sin(t), 3);
+    const hy = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+    const px = cx + hx * scale;
+    const py = cy + hy * scale;
+
+    const el = document.createElement('span');
+    el.textContent = '🩷';
+    // Větší srdíčka než dříve
+    el.style.cssText = `
+      position:absolute;
+      left:${px.toFixed(1)}px;
+      top:${py.toFixed(1)}px;
+      font-size:clamp(1.05rem,3.0vw,1.4rem);
+      opacity:0;
+      transform:translate(-50%,-50%) scale(0);
+      transition:opacity 0.45s ease, transform 0.55s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events:none;
+      user-select:none;
+    `;
+    overlay.appendChild(el);
+
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translate(-50%,-50%) scale(1)';
+    }, (i / N) * 3000);
+  }
+}
+
+/* ══ VÝBUCH SRDÍČEK ══ */
+function spawnHearts() {
+  const layer = document.getElementById('hearts-layer');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const count = Math.max(170, Math.round(vw * vh / 2600));
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('span');
+    el.className = 'hp';
+    el.textContent = HEARTS_EMOJI[Math.floor(Math.random() * HEARTS_EMOJI.length)];
+    const x   = (Math.random() * 114 - 7).toFixed(2);
+    const y   = (Math.random() * 114 - 7).toFixed(2);
+    const fs  = (1.9 + Math.random() * 3.4).toFixed(2) + 'rem';
+    const del = (Math.random() * 2.2).toFixed(3) + 's';
+    const dur = (0.55 + Math.random() * 0.6).toFixed(3) + 's';
+    const rot = ((Math.random() - 0.5) * 70).toFixed(1) + 'deg';
+    el.style.cssText = `left:${x}%;top:${y}%;--fs:${fs};--del:${del};--dur:${dur};--r:${rot};`;
+    layer.appendChild(el);
+  }
+}
+
+/* ══ DEKORATIVNÍ KYTIČKY ══ */
+function addCorners() {
+  [{top:'2%',left:'2%'},{top:'2%',right:'2%'},
+   {bottom:'2%',left:'2%'},{bottom:'2%',right:'2%'},
+   {top:'32%',left:'1%'},{top:'62%',right:'1%'}
+  ].forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'corner';
+    d.textContent = '🌸';
+    Object.assign(d.style, s);
+    document.body.appendChild(d);
+  });
+}
+
+/* ══════════════════ TIMELINE ══════════════════
+    600ms  → Řádek 1 (PRO)
+   1650ms  → Řádek 2 (MAMINKU)
+   2700ms  → Řádek 3 (ELENKU)
+   4200ms  → buildHeartShape() — 1,5 s pauza po řádku 3
+   7200ms  → Srdcový tvar hotov (3 s build)
+   9200ms  → Fade phase1 + overlay, phaseA visible: "My s tebou" 😊
+  13200ms  → Přechod na "My bez tebe" 😟  (4 s)
+  14700ms  → Start pádu + kývání smajlíka  (1,5 s po přechodu)
+  18000ms  → Fade phaseA, phaseB visible: "JEŠTĚ NĚCO ALE!"
+  20000ms  → Fade phaseB, phase2 visible: loading  (2 s)
+  22500ms  → Loading text visible  (2,5 s točení)
+  29500ms  → Výbuch srdíček + phase4  (7 s)
+══════════════════════════════════════════════ */
+
+setTimeout(() => document.getElementById('row1').classList.add('active'), 600);
+setTimeout(() => document.getElementById('row2').classList.add('active'), 1650);
+setTimeout(() => document.getElementById('row3').classList.add('active'), 2700);
+
+// Srdcový tvar — 1,5 s po třetím řádku
+setTimeout(() => buildHeartShape(), 4200);
+
+// Přechod na phaseA
+setTimeout(() => {
+  document.getElementById('phase1').classList.add('fade-out');
+  const ho = document.getElementById('heart-overlay');
+  ho.style.opacity = '0';
+  ho.style.pointerEvents = 'none';
+  document.getElementById('phaseA').classList.add('visible');
+  document.getElementById('stebou').classList.add('visible');
+}, 9200);
+
+// Přepnutí na "My bez tebe" — po 4 sekundách
+setTimeout(() => {
+  document.getElementById('stebou').classList.remove('visible');
+  document.getElementById('beztebe').classList.add('visible');
+}, 13200);
+
+// Pád textu + kývání smajlíka (levá strana připnutá, pravá padá)
+setTimeout(() => {
+  document.getElementById('beztebe-text').classList.add('falling');
+  document.getElementById('emoji-sad').classList.add('swinging');
+}, 14700);
+
+// PhaseA pryč, phaseB nastoupí
+setTimeout(() => {
+  document.getElementById('phaseA').classList.add('fade-out');
+  document.getElementById('phaseB').classList.add('visible');
+}, 18000);
+
+// PhaseB pryč, loading nastoupí
+setTimeout(() => {
+  document.getElementById('phaseB').classList.add('fade-out');
+  document.getElementById('phase2').classList.add('visible');
+}, 22000);
+
+// Loading text
+setTimeout(() => {
+  document.getElementById('loading-text').classList.add('visible');
+}, 24500);
+
+// Výbuch srdíček + finální zpráva
+setTimeout(() => {
+  document.getElementById('phase2').classList.add('fade-out');
+  spawnHearts();
+  addCorners();
+  setTimeout(() => document.getElementById('phase4').classList.add('visible'), 600);
+  setTimeout(() => document.getElementById('hearts-layer').classList.add('fade-out'), 3500);
+}, 31500);
+</script>
+</body>
+</html>
